@@ -1,8 +1,10 @@
-from fastapi import FastAPI, UploadFile, Form, Response
+from fastapi import FastAPI, UploadFile, Form, Response,Depends
 from fastapi.staticfiles import StaticFiles
 from typing import Annotated
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
+from fastapi_login import LoginManager
+from fastapi_login.exceptions import InvalidCredentialsException
 import sqlite3
 
 
@@ -22,6 +24,43 @@ cur.execute(f"""
 
 
 app = FastAPI()
+
+SECRET = "super-coding"
+manager = LoginManager(SECRET,'/login')
+@manager.user_loader()
+
+
+def query_user(data) :
+    WHERE_STATEMENTS = f'id="{data}"'
+    if type(data) == dict :
+        WHERE_STATEMENTS = f'''id ="{data['id']}"'''
+    con.row_factory = sqlite3.Row 
+    cur = con.cursor()
+    user =  cur.execute(f"""
+                SELECT * FROM users WHERE {WHERE_STATEMENTS}
+                """).fetchone()
+    return user
+
+# login 포스트
+@app.post('/login')
+def login(id: Annotated[str, Form()],
+    password: Annotated[str, Form()]):
+    user = query_user(id)
+    if not user :
+        raise InvalidCredentialsException
+    elif password != user['password'] :
+        raise InvalidCredentialsException
+    
+    access_token = manager.create_access_token(data ={
+        'sub' : {
+        'id' : user['id'],
+        'name' : user['name'],
+        'email' : user['email'] }
+    })
+
+    return {'access_token' : access_token}
+
+
 
 
 @app.post("/items")
@@ -45,9 +84,9 @@ async def create_item(
 
 
 @app.get("/items")
-async def get_items():
-    con.row_factory = sqlite3.Row  # 컬럼명도 같이 가져옴
-    cur = con.cursor()
+async def get_items(user=Depends(manager)):
+    con.row_factory = sqlite3.Row  # 컬럼명도 같이 가져옴= con.cursor()
+    cur = con.cursor() 
     rows = cur.execute(
         f""" 
                        SELECT * FROM items;
@@ -55,7 +94,7 @@ async def get_items():
     ).fetchall()
 
     return JSONResponse(jsonable_encoder(dict(row) for row in rows))
-
+# 회원가입 post
 @app.post("/signup")
 def signup(
     id: Annotated[str, Form()],
