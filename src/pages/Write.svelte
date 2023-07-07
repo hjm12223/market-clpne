@@ -1,32 +1,61 @@
 <script>
   import { getDatabase, ref, push } from "firebase/database";
-  import { prevent_default } from "svelte/internal";
   import Footer from "../components/Footer.svelte";
+  import {
+    getStorage,
+    ref as refImage,
+    uploadBytes,
+    getDownloadURL,
+  } from "firebase/storage";
 
   let title;
   let price;
   let description;
   let place;
+  let files;
 
-  async function writeUserData() {
+  const storage = getStorage();
+
+  async function writeUserData(imgUrl) {
     const db = getDatabase();
     push(ref(db, "items/"), {
       title,
       price,
       description,
       place,
+      insertAt: new Date().getTime(),
+      imgUrl,
     });
     alert("글쓰기 완료되었습니다.");
     window.location.hash = "/";
   }
+
+  $: if (files) console.log(files[0]);
+
+  const uploadFile = async () => {
+    const file = files[0];
+    const name = file.name;
+    const imgRef = refImage(storage, name);
+    await uploadBytes(imgRef, file);
+    const url = await getDownloadURL(imgRef);
+    return url;
+  };
+
+  const handleSubmit = async () => {
+    const url = await uploadFile();
+    writeUserData(url);
+  };
 </script>
 
+<div>
+  <button on:click={uploadFile}>테스트 </button>
+</div>
 <body>
-  <form id="write-form" on:submit|preventDefault={writeUserData}>
-    <!-- <div>
+  <form id="write-form" on:submit|preventDefault={handleSubmit}>
+    <div>
       <label for="">이미지</label>
-      <input type="file" id="image" name="image" />
-    </div> -->
+      <input type="file" bind:files id="image" name="image" />
+    </div>
     <div>
       <label for="">제목</label>
       <input type="text" id="title" name="title" bind:value={title} />
