@@ -5,13 +5,13 @@ import { getAuth} from "firebase/auth";
 
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBPUPdKThflNHwV4-kJUNxP3xtvRcoDW3Y",
-  authDomain: "carrot-clone-market.firebaseapp.com",
-  databaseURL: "https://carrot-clone-market-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "carrot-clone-market",
-  storageBucket: "carrot-clone-market.appspot.com",
-  messagingSenderId: "290349899394",
-  appId: "1:290349899394:web:6bcc8d85b90092c5fa9e9b",
+  apiKey:import.meta.env.VITE_APP_KEY,
+  authDomain: import.meta.env.VITE_AUTH_DOMAIN,
+  databaseURL: import.meta.env.VITE_DB_URL,
+  projectId: import.meta.env.VITE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_MSG_ID,
+  appId: import.meta.env.VITE_APP_ID,
   measurementId: "G-4TW1WVH86K"
 };
 

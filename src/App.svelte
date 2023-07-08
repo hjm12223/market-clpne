@@ -48,6 +48,3 @@
 {:else}
   <Router {routes} />
 {/if}
-
-<style>
-</style>

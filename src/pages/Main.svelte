@@ -23,7 +23,7 @@
     const time = new Date(curtime - timestamp);
     const hour = time.getHours();
     const minute = time.getMinutes();
-    const second = time.getSeconds;
+    const second = time.getSeconds();
 
     if (hour > 0) return `${hour}시간 전`;
     else if (minute > 0) return `${minute}분 전`;
